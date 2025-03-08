@@ -19,12 +19,16 @@ int main(int argc, char *argv[]) {
     bool newfile = false;
     int c;
 
+    int dbfd = -1;
+
+    // get option character from command line argument list
     while((c = getopt(argc, argv, "nf:")) != -1) {
         switch(c) {
             case 'n':
                 newfile = true;
                 break;
             case 'f':
+                // optarg points to the string following the option character f, the filepath in this case
                 filepath = optarg;
                 break;
             case '?':
@@ -40,6 +44,20 @@ int main(int argc, char *argv[]) {
         print_usage(argv);
 
         return 0;
+    }
+
+    if (newfile) {
+        dbfd = create_db_file(filepath);
+        if (dbfd == -1) {
+            printf("Unable to create database file\n");
+            return -1;
+        }
+    } else {
+        dbfd = open_db_file(filepath);
+        if (dbfd == -1) {
+            printf("Unable to create database file\n");
+            return -1;
+        }
     }
 
     printf("Newfile: %d\n", newfile);
