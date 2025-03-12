@@ -14,12 +14,39 @@ void list_employees(struct dbheader_t *dbhdr, struct employee_t *employees)
 {
 }
 
+// employees is a SINGLE pointer because we just want to read data
 int add_employee(struct dbheader_t *dbhdr, struct employee_t *employees, char *addstring)
 {
+
 }
 
+// employeesOut is a DOUBLE pointer because we want to output it back to the caller (main.c)
 int read_employees(int fd, struct dbheader_t *dbhdr, struct employee_t **employeesOut)
 {
+    if (fd < 0)
+    {
+        printf("Got a bad FD from user\n");
+        return STATUS_ERROR;
+    }
+
+    int count = dbhdr->count;
+
+    struct employee_t *employees = calloc(count, sizeof(struct employee_t));
+    if (employees == NULL) {
+        printf("calloc failed\n");
+        return STATUS_ERROR;
+    }
+
+    // populate data onto employees array
+    read(fd, employees, count * sizeof(struct employee_t));
+
+    int i = 0;
+    for (; i < count; i++) {
+        employees[i].hours = ntohl(employees[i].hours);
+    }
+
+    *employeesOut = employees;
+    return STATUS_SUCCESS;
 }
 
 int output_file(int fd, struct dbheader_t *dbhdr)
@@ -45,6 +72,7 @@ int output_file(int fd, struct dbheader_t *dbhdr)
     return 0;
 }
 
+// headerOut is a DOUBLE pointer because we want to output it back to the caller (main.c)
 int validate_db_header(int fd, struct dbheader_t **headerOut)
 {
     if (fd < 0)
@@ -107,6 +135,7 @@ int validate_db_header(int fd, struct dbheader_t **headerOut)
     *headerOut = header;
 }
 
+// headerOut is a DOUBLE pointer because we want to output it back to the caller (main.c)
 int create_db_header(int fd, struct dbheader_t **headerOut)
 {
     struct dbheader_t *header = calloc(1, sizeof(struct dbheader_t));
@@ -121,6 +150,7 @@ int create_db_header(int fd, struct dbheader_t **headerOut)
     header->magic = HEADER_MAGIC;
     header->filesize = sizeof(struct dbheader_t);
 
+    // assign the header to the output pointer so the caller (main.c) can use it
     *headerOut = header;
 
     return STATUS_SUCCESS;

@@ -18,11 +18,13 @@ void print_usage(char *argv[])
 int main(int argc, char *argv[])
 {
     char *filepath = NULL;
+    char *addstring = NULL;
     bool newfile = false;
     int c;
 
     int dbfd = -1;
     struct dbheader_t *dbhdr = NULL;
+    struct employee_t *employees = NULL;
 
     // get option character from command line argument list
     while ((c = getopt(argc, argv, "nf:")) != -1)
@@ -35,6 +37,9 @@ int main(int argc, char *argv[])
         case 'f':
             // optarg points to the string following the option character f, the filepath in this case
             filepath = optarg;
+            break;
+        case 'a':
+            addstring = optarg;
             break;
         case '?':
             printf("Unknown option -%c\n", c);
@@ -84,8 +89,14 @@ int main(int argc, char *argv[])
         }
     }
 
-    printf("Newfile: %d\n", newfile);
-    printf("Filepath: %s\n", filepath);
+    if (read_employees(dbfd, dbhdr, &employees) != STATUS_SUCCESS) {
+        printf("Failed to read employees");
+        return 0;
+    }
+
+    if (addstring) {
+        add_employee(dbhdr, employees, addstring);
+    }
 
     output_file(dbfd, dbhdr);
 
