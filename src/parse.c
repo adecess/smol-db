@@ -17,7 +17,23 @@ void list_employees(struct dbheader_t *dbhdr, struct employee_t *employees)
 // employees is a SINGLE pointer because we just want to read data
 int add_employee(struct dbheader_t *dbhdr, struct employee_t *employees, char *addstring)
 {
+    printf("%s\n", addstring);
 
+    char *name = strtok(addstring, ",");
+
+    char *address = strtok(NULL, ",");
+
+    char *hours = strtok(NULL, ",");
+
+    printf("%s %s %s\n", name, address, hours);
+
+    strncpy(employees[dbhdr->count - 1].name, name, sizeof(employees[dbhdr->count - 1].name));
+
+    strncpy(employees[dbhdr->count - 1].address, address, sizeof(employees[dbhdr->count - 1].address));
+
+    employees[dbhdr->count - 1].hours = atoi(hours);
+
+    return STATUS_SUCCESS;
 }
 
 // employeesOut is a DOUBLE pointer because we want to output it back to the caller (main.c)
@@ -40,8 +56,7 @@ int read_employees(int fd, struct dbheader_t *dbhdr, struct employee_t **employe
     // populate data onto employees array
     read(fd, employees, count * sizeof(struct employee_t));
 
-    int i = 0;
-    for (; i < count; i++) {
+    for (int i = 0; i < count; i++) {
         employees[i].hours = ntohl(employees[i].hours);
     }
 
@@ -49,7 +64,7 @@ int read_employees(int fd, struct dbheader_t *dbhdr, struct employee_t **employe
     return STATUS_SUCCESS;
 }
 
-int output_file(int fd, struct dbheader_t *dbhdr)
+int output_file(int fd, struct dbheader_t *dbhdr, struct employee_t *employees)
 {
     if (fd < 0)
     {
@@ -57,9 +72,11 @@ int output_file(int fd, struct dbheader_t *dbhdr)
         return STATUS_ERROR;
     }
 
+    int realcount = dbhdr->count;
+
     // data is converted from the host's native endianness to network byte order (big-endian)
     dbhdr->magic = htonl(dbhdr->magic);
-    dbhdr->filesize = htonl(dbhdr->filesize);
+    dbhdr->filesize = htonl(sizeof(struct dbheader_t) + (sizeof(struct employee_t) * realcount));
     dbhdr->count = htons(dbhdr->count);
     dbhdr->version = htons(dbhdr->version);
 
@@ -68,6 +85,11 @@ int output_file(int fd, struct dbheader_t *dbhdr)
 
     // write the header back to the file on disk
     write(fd, dbhdr, sizeof(struct dbheader_t));
+
+    for (int i = 0; i < realcount; i++) {
+        employees[i].hours = htonl(employees[i].hours);
+        write(fd, &employees[i], sizeof(struct employee_t));
+    }
 
     return 0;
 }
@@ -133,6 +155,7 @@ int validate_db_header(int fd, struct dbheader_t **headerOut)
 
     // assign the header to the output pointer so the caller (main.c) can use it
     *headerOut = header;
+    return STATUS_SUCCESS;
 }
 
 // headerOut is a DOUBLE pointer because we want to output it back to the caller (main.c)

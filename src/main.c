@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     struct employee_t *employees = NULL;
 
     // get option character from command line argument list
-    while ((c = getopt(argc, argv, "nf:")) != -1)
+    while ((c = getopt(argc, argv, "nf:a:")) != -1)
     {
         switch (c)
         {
@@ -95,10 +95,12 @@ int main(int argc, char *argv[])
     }
 
     if (addstring) {
+        dbhdr->count++;
+        employees = realloc(employees, dbhdr->count * (sizeof(struct employee_t)));
         add_employee(dbhdr, employees, addstring);
     }
 
-    output_file(dbfd, dbhdr);
+    output_file(dbfd, dbhdr, employees);
 
     return 0;
 }
