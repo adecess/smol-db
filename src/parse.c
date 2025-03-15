@@ -12,6 +12,12 @@
 
 void list_employees(struct dbheader_t *dbhdr, struct employee_t *employees)
 {
+    for (int i = 0; i < dbhdr->count; i++) {
+        printf("Employee %d\n", i);
+        printf("\tName: %s\n", employees[i].name);
+        printf("\tAddress: %s\n", employees[i].address);
+        printf("\tHours: %u\n", employees[i].hours);
+    }
 }
 
 // employees is a SINGLE pointer because we just want to read data
@@ -20,15 +26,12 @@ int add_employee(struct dbheader_t *dbhdr, struct employee_t *employees, char *a
     printf("%s\n", addstring);
 
     char *name = strtok(addstring, ",");
-
     char *address = strtok(NULL, ",");
-
     char *hours = strtok(NULL, ",");
 
     printf("%s %s %s\n", name, address, hours);
 
     strncpy(employees[dbhdr->count - 1].name, name, sizeof(employees[dbhdr->count - 1].name));
-
     strncpy(employees[dbhdr->count - 1].address, address, sizeof(employees[dbhdr->count - 1].address));
 
     employees[dbhdr->count - 1].hours = atoi(hours);

@@ -20,6 +20,7 @@ int main(int argc, char *argv[])
     char *filepath = NULL;
     char *addstring = NULL;
     bool newfile = false;
+    bool list = false;
     int c;
 
     int dbfd = -1;
@@ -27,7 +28,7 @@ int main(int argc, char *argv[])
     struct employee_t *employees = NULL;
 
     // get option character from command line argument list
-    while ((c = getopt(argc, argv, "nf:a:")) != -1)
+    while ((c = getopt(argc, argv, "nf:a:l")) != -1)
     {
         switch (c)
         {
@@ -40,6 +41,9 @@ int main(int argc, char *argv[])
             break;
         case 'a':
             addstring = optarg;
+            break;
+        case 'l':
+            list = true;
             break;
         case '?':
             printf("Unknown option -%c\n", c);
@@ -98,6 +102,10 @@ int main(int argc, char *argv[])
         dbhdr->count++;
         employees = realloc(employees, dbhdr->count * (sizeof(struct employee_t)));
         add_employee(dbhdr, employees, addstring);
+    }
+
+    if (list) {
+        list_employees(dbhdr, employees);
     }
 
     output_file(dbfd, dbhdr, employees);
