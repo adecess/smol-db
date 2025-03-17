@@ -19,16 +19,19 @@ int main(int argc, char *argv[])
 {
     char *filepath = NULL;
     char *addstring = NULL;
+    char *removestring = NULL;
     bool newfile = false;
     bool list = false;
+    bool removefile = false;
     int c;
 
     int dbfd = -1;
+    int tmpfd = -1;
     struct dbheader_t *dbhdr = NULL;
     struct employee_t *employees = NULL;
 
     // get option character from command line argument list
-    while ((c = getopt(argc, argv, "nf:a:l")) != -1)
+    while ((c = getopt(argc, argv, "nf:a:r:l")) != -1)
     {
         switch (c)
         {
@@ -41,6 +44,10 @@ int main(int argc, char *argv[])
             break;
         case 'a':
             addstring = optarg;
+            break;
+        case 'r':
+            removefile = true;
+            removestring = optarg;
             break;
         case 'l':
             list = true;
@@ -104,8 +111,24 @@ int main(int argc, char *argv[])
         add_employee(dbhdr, employees, addstring);
     }
 
+    if (removestring) {
+        remove_employee(dbhdr, employees, removestring);
+        dbhdr->count--;
+        employees = realloc(employees, dbhdr->count * (sizeof(struct employee_t)));
+    }
+
     if (list) {
         list_employees(dbhdr, employees);
+    }
+
+    if (removefile) {
+        tmpfd = create_tmp_file();
+
+        if (tmpfd == -1)
+        {
+            printf("Unable to create tmp file\n");
+            return -1;
+        }
     }
 
     output_file(dbfd, dbhdr, employees);

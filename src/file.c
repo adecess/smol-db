@@ -36,4 +36,19 @@ int open_db_file(char *filename) {
     return fd;
 }
 
+int create_tmp_file() {
+    int fd = open(TMP, O_RDONLY);
+    if (fd != -1) {
+        close(fd);
+        printf("Tmp File already exists\n");
+        return STATUS_ERROR;
+    }
 
+    fd = open(TMP, O_RDWR | O_CREAT, 0644);
+    if (fd == -1) {
+        perror("open");
+        return STATUS_ERROR;
+    }
+
+    return fd;
+}

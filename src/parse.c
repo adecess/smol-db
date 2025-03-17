@@ -23,7 +23,7 @@ void list_employees(struct dbheader_t *dbhdr, struct employee_t *employees)
 // employees is a SINGLE pointer because we just want to read data
 int add_employee(struct dbheader_t *dbhdr, struct employee_t *employees, char *addstring)
 {
-    printf("%s\n", addstring);
+    printf("Adding %s\n", addstring);
 
     char *name = strtok(addstring, ",");
     char *address = strtok(NULL, ",");
@@ -33,8 +33,42 @@ int add_employee(struct dbheader_t *dbhdr, struct employee_t *employees, char *a
 
     strncpy(employees[dbhdr->count - 1].name, name, sizeof(employees[dbhdr->count - 1].name));
     strncpy(employees[dbhdr->count - 1].address, address, sizeof(employees[dbhdr->count - 1].address));
-
     employees[dbhdr->count - 1].hours = atoi(hours);
+
+    return STATUS_SUCCESS;
+}
+
+int remove_employee(struct dbheader_t *dbhdr, struct employee_t *employees, char *removestring) {
+    printf("Removing %s\n", removestring);
+
+    char *name = strtok(removestring, ",");
+    char *address = strtok(NULL, ",");
+    char *hours = strtok(NULL, ",");
+
+    printf("%s %s %s\n", name, address, hours);
+
+    int delete_index = -1;
+    for (int i = 0; i < dbhdr->count; i++) {
+        if (strcmp(employees[i].name, name) == 0 &&
+            strcmp(employees[i].address, address) == 0 &&
+            employees[i].hours == atoi(hours)) {
+            delete_index = i;
+            break;
+        }
+    }
+
+    if (delete_index == -1)
+    {
+        printf("There is no such employee in the database\n");
+        return STATUS_ERROR;
+    }
+    else if (delete_index < dbhdr->count - 1) {
+        for (int i = delete_index; i < dbhdr->count - 1; i++) {
+            strncpy(employees[i].name, employees[i + 1].name, sizeof(employees[i + 1].name));
+            strncpy(employees[i].address, employees[i + 1].address, sizeof(employees[i + 1].address));
+            employees[i].hours = employees[i + 1].hours;
+        }
+    }
 
     return STATUS_SUCCESS;
 }
@@ -151,6 +185,7 @@ int validate_db_header(int fd, struct dbheader_t **headerOut)
     fstat(fd, &dbstat);
     if (header->filesize != dbstat.st_size)
     {
+        printf("filesize %u, stat size %lld\n", header->filesize, dbstat.st_size);
         printf("Corrupted database\n");
         free(header);
         return STATUS_ERROR;
@@ -171,7 +206,7 @@ int create_db_header(int fd, struct dbheader_t **headerOut)
         return STATUS_ERROR;
     }
 
-    header->version = 1;
+    header->version = 0x1;
     header->count = 0;
     header->magic = HEADER_MAGIC;
     header->filesize = sizeof(struct dbheader_t);
