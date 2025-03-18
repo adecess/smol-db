@@ -27,6 +27,7 @@ Available options:
 - `-n` : Create a new database
 - `-a "<name>, <address>, <hours>"` : Add a new employee
 - `-r <name>` : Remove an employee by name
+- `-l` : List all employees in the database
 
 Examples:
 
@@ -39,4 +40,7 @@ Examples:
 
 # Remove an employee
 ./bin/dbview -f ./mynewdb.db -r "Jean M., 12 rue de la Poterie, 200"
+
+# List all employees
+./bin/dbview -f ./mynewdb.db -l
 ```
