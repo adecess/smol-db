@@ -112,9 +112,14 @@ int main(int argc, char *argv[])
     }
 
     if (removestring) {
-        remove_employee(dbhdr, employees, removestring);
-        dbhdr->count--;
-        employees = realloc(employees, dbhdr->count * (sizeof(struct employee_t)));
+        if (remove_employee(dbhdr, employees, removestring) == STATUS_ERROR) {
+            printf("Unable to remove employee\n");
+            return -1;
+        }
+        else {
+            dbhdr->count--;
+            employees = realloc(employees, dbhdr->count * (sizeof(struct employee_t)));
+        };
     }
 
     if (list) {
@@ -122,16 +127,22 @@ int main(int argc, char *argv[])
     }
 
     if (removefile) {
-        tmpfd = create_tmp_file();
+        tmpfd = create_db_file(TMP);
 
         if (tmpfd == -1)
         {
             printf("Unable to create tmp file\n");
             return -1;
         }
+
+        output_file(tmpfd, dbhdr, employees);
+
+        replace_db_file(dbfd, filepath, tmpfd, TMP);
+    }
+    else {
+        output_file(dbfd, dbhdr, employees);
     }
 
-    output_file(dbfd, dbhdr, employees);
 
     return 0;
 }

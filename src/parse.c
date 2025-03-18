@@ -45,10 +45,9 @@ int remove_employee(struct dbheader_t *dbhdr, struct employee_t *employees, char
     char *address = strtok(NULL, ",");
     char *hours = strtok(NULL, ",");
 
-    printf("%s %s %s\n", name, address, hours);
-
     int delete_index = -1;
     for (int i = 0; i < dbhdr->count; i++) {
+        // if the employee is found, we store the index of the employee to be deleted
         if (strcmp(employees[i].name, name) == 0 &&
             strcmp(employees[i].address, address) == 0 &&
             employees[i].hours == atoi(hours)) {
@@ -62,6 +61,7 @@ int remove_employee(struct dbheader_t *dbhdr, struct employee_t *employees, char
         printf("There is no such employee in the database\n");
         return STATUS_ERROR;
     }
+    // if the employee is not the last one in the database, we shift the employees left to overwrite the employee to be deleted
     else if (delete_index < dbhdr->count - 1) {
         for (int i = delete_index; i < dbhdr->count - 1; i++) {
             strncpy(employees[i].name, employees[i + 1].name, sizeof(employees[i + 1].name));

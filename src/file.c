@@ -36,19 +36,17 @@ int open_db_file(char *filename) {
     return fd;
 }
 
-int create_tmp_file() {
-    int fd = open(TMP, O_RDONLY);
-    if (fd != -1) {
-        close(fd);
-        printf("Tmp File already exists\n");
-        return STATUS_ERROR;
+int replace_db_file(int oldfd, char *filename, int tmpfd, char *tmpfile) {
+    // Close both files to ensure all data is flushed
+    close(oldfd);
+    close(tmpfd);
+
+    // Replace the original file with the new one
+    if (rename(tmpfile, filename) == -1) {
+        perror("Error replacing original file");
+        unlink(tmpfile); // Clean up temp file
+        return -1;
     }
 
-    fd = open(TMP, O_RDWR | O_CREAT, 0644);
-    if (fd == -1) {
-        perror("open");
-        return STATUS_ERROR;
-    }
-
-    return fd;
+    return 0;
 }
